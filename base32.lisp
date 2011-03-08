@@ -150,8 +150,9 @@
   (let* ((word-count (ceiling (* 8 (length some-bytes)) 5) )
          (digit-count (* 8 (ceiling word-count 8))))
     (values digit-count word-count)))
+
 (defun bytes-to-base32 (some-bytes)
-  "Return a base32 string encoding of the provided bytes"
+  "Return a base32 string encoding of the provided vector of bytes"
   (let* ((word-count (ceiling (* 8 (length some-bytes)) 5) )
          (digit-count (* 8 (ceiling word-count 8)))
          (base32-string (make-string digit-count :initial-element #\=)))
@@ -161,7 +162,7 @@
     base32-string))
 
 (defun base32-to-bytes (base32-string)
-  "Return the bytes encoded in the supplied base32 string"
+  "Return the bytes decoded from the supplied base32 string"
   (let* ((byte-count (byte-length-from-base32 base32-string) )
          (base32-bytes (make-array `(,byte-count) 
                                    :element-type '(unsigned-byte 8) 

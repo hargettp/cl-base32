@@ -31,4 +31,5 @@
     ;; Exported symbols go here
    #:bytes-to-base32
    #:base32-to-bytes
-   ))
+   )
+  (:documentation "This package implements the base32 encoding/decoding defined in RF 4648."))
