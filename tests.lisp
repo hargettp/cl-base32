@@ -24,7 +24,7 @@
 (in-package :cl-base32-tests)
 
 ;; start fresh--remove any tests that no longer exist
-(remove-all-tests)
+(remove-tests :all)
 
 (define-test basic-encoding-decoding
   (assert-equalp #(1 2 3)
@@ -38,4 +38,4 @@
   (assert-equal 16
 		(length (bytes-to-base32 #(1 2 3 4 5 16)))))
 
-(run-all-tests :cl-base32-tests)
+(run-tests :all :cl-base32-tests)
