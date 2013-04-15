@@ -38,4 +38,8 @@
   (assert-equal 16
 		(length (bytes-to-base32 #(1 2 3 4 5 16)))))
 
+(define-test upcased-encoding-decoding
+  (assert-equalp #(1 2 3)
+		(base32-to-bytes (string-upcase (bytes-to-base32 #(1 2 3))))))
+
 (run-tests :all :cl-base32-tests)

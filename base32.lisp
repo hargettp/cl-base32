@@ -28,11 +28,18 @@
 
 (defun encode-word (a-word)
   "Return the digit in the base32 alphabet corresponding to a word"
-  (elt *base32-alphabet* a-word))
+  (char *base32-alphabet* a-word))
 
 (defun decode-word (a-digit)
   "Return the word encoded as a digit in the base32 alphabet"
-  (position a-digit *base32-alphabet*))
+  (let ((code (char-code a-digit)))
+    (or (and (char<= #\a a-digit #\z)
+             (- code (char-code #\a)))
+        (and (char<= #\2 a-digit #\7)
+             (+ 26 (- code (char-code #\2))))
+        ;; upper case
+        (and (char<= #\A a-digit #\Z)
+             (- code (char-code #\A))))))
 
 (defun read-word (some-bytes word-index)
   "Return the word (a 5-bit integer) found in some-bytes located at word-index"
