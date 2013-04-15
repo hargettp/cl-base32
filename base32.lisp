@@ -41,9 +41,9 @@
         (and (char<= #\A a-digit #\Z)
              (- code (char-code #\A))))))
 
-(defun read-word (some-bytes word-index)
+(defun read-word (some-bytes word-index start end)
   "Return the word (a 5-bit integer) found in some-bytes located at word-index"
-  (let* ((bytes-length (length some-bytes))
+  (let* ((bytes-length (- end start))
 	 ;; don't be confused : bit indexes aren't really pointing to
 	 ;; the bit as understood by Lisp--they are more virtual in nature,
 	 ;; which assumes that bit 0 is the MSB rather than bit 8 being MSB
@@ -69,12 +69,12 @@
          (value 0))
     
     (setf (ldb dest-part1 value)
-          (ldb source-part1 (aref some-bytes part1-byte-index)))
+          (ldb source-part1 (aref some-bytes (+ start part1-byte-index))))
     (if (< part1-byte-index bytes-length)
         (if (> part2-byte-index part1-byte-index)
-            (if (< part2-byte-index (length some-bytes))
+            (if (< part2-byte-index bytes-length)
                 (setf (ldb dest-part2 value)
-                      (ldb source-part2 (aref some-bytes part2-byte-index)))
+                      (ldb source-part2 (aref some-bytes (+ start part2-byte-index))))
                 (setf (ldb dest-part2 value) 0 )))
         (setq value 0))
     value))
@@ -126,11 +126,11 @@
             (decf unpadded-length)
             (return unpadded-length)))))
 
-(defun byte-length-from-base32 (base32-string)
+(defun byte-length-from-base32 (base32-string start end)
   "Given a base32 string, compute the number of bytes in the 
    decoded data
   "
-  (let* ((padded-length (length base32-string))
+  (let* ((padded-length (- end start))
          (unpadded-length padded-length)
          (padding 0)
          (block-count (ceiling padded-length 8)))
@@ -138,7 +138,7 @@
         0
         (progn
           (dotimes (i padded-length)
-            (if (eql #\= (aref base32-string (- padded-length i 1)))
+            (if (eql #\= (aref base32-string (+ start (- padded-length i 1))))
                 (progn
                   (decf unpadded-length)
                   (incf padding))))
@@ -158,24 +158,25 @@
          (digit-count (* 8 (ceiling word-count 8))))
     (values digit-count word-count)))
 
-(defun bytes-to-base32 (some-bytes)
+(defun bytes-to-base32 (some-bytes &key (start 0) (end (length some-bytes)))
   "Return a base32 string encoding of the provided vector of bytes"
-  (let* ((word-count (ceiling (* 8 (length some-bytes)) 5) )
+  (let* ((length (- end start))
+         (word-count (ceiling (* 8 length) 5) )
          (digit-count (* 8 (ceiling word-count 8)))
          (base32-string (make-string digit-count :initial-element #\=)))
     (dotimes (i word-count)
       (setf (aref base32-string i)
-            (encode-word (read-word some-bytes i))))
+            (encode-word (read-word some-bytes i start end))))
     base32-string))
 
-(defun base32-to-bytes (base32-string)
+(defun base32-to-bytes (base32-string &key (start 0) (end (length base32-string)))
   "Return the bytes decoded from the supplied base32 string"
-  (let* ((byte-count (byte-length-from-base32 base32-string) )
+  (let* ((byte-count (byte-length-from-base32 base32-string start end) )
          (base32-bytes (make-array `(,byte-count) 
                                    :element-type '(unsigned-byte 8) 
                                    :initial-element 0)))
-    (dotimes (i (length base32-string))
-      (let ((word (decode-word (aref base32-string i))))
+    (dotimes (i (- end start))
+      (let ((word (decode-word (aref base32-string (+ start i)))))
         (if word
             (write-word base32-bytes i word)
             (return nil))))
