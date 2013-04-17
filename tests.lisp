@@ -38,4 +38,21 @@
   (assert-equal 16
 		(length (bytes-to-base32 #(1 2 3 4 5 16)))))
 
+(define-test upcased-encoding-decoding
+  (assert-equalp #(1 2 3)
+		(base32-to-bytes (string-upcase (bytes-to-base32 #(1 2 3))))))
+
+(define-test offset-decoding
+  (assert-equalp
+   #(1 2 3 253 254 255)
+   (let ((encoded (bytes-to-base32 #(1 2 3 253 254 255))))
+     (base32-to-bytes
+      (concatenate 'string "foo" encoded "bar")
+      :start 3
+      :end (+ (length encoded) 3)))))
+
+(define-test offset-encoding
+  (assert-equalp #(2 3 253 254)
+		(base32-to-bytes (bytes-to-base32 #(1 2 3 253 254 255) :start 1 :end 5))))
+
 (run-tests :all :cl-base32-tests)
