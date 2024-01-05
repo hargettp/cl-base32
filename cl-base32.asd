@@ -18,36 +18,22 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-
-(defpackage #:cl-base32-asd
-  (:use :cl :asdf))
-
-(in-package :cl-base32-asd)
-
-(defsystem cl-base32
+(defsystem #:cl-base32
   :name "cl-base32"
   :version "0.1"
   :serial t
   :components ((:file "package")
-               
-	       (:file "base32")
-               )
-  :depends-on (
-	       ;; external packages
-               
-               ;; project packages
-               ))
+	       (:file "base32"))
+  :in-order-to ((test-op (test-op #:cl-base32/tests))))
 
-(defsystem cl-base32-tests
-  :name "cl-base32-tests"
+(defsystem #:cl-base32/tests
+  :name "cl-base32/tests"
   :version "0.1"
   :serial t
-  :components (
-               (:file "tests")
-               )
-  :depends-on (
-	       ;; external packages
-	       "lisp-unit"
+  :components ((:file "tests"))
+  :depends-on (;; external packages
+	       #:lisp-unit
 	       ;; project packages
-               "cl-base32"
-	       ))
+               #:cl-base32)
+  :perform (test-op (op c)
+                    (symbol-call :lisp-unit '#:run-tests :all :cl-base32-tests)))
